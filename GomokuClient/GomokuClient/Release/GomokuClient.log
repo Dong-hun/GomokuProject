@@ -1,0 +1,8 @@
+﻿  GomokuClient.cpp
+c:\users\yoondh\documents\visual studio 2017\projects\gomokuproject\gomokuclient\gomokuclient\gomokuclient.cpp(243): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+  코드를 생성하고 있습니다.
+  27 of 111 functions (24.3%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  GomokuClient.vcxproj -> C:\Users\yoondh\Documents\Visual Studio 2017\Projects\GomokuProject\GomokuClient\Release\GomokuClient.exe
