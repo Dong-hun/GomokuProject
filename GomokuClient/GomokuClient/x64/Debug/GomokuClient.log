@@ -1,0 +1,4 @@
+﻿  stdafx.cpp
+  GomokuClient.cpp
+c:\users\yoondh\documents\visual studio 2017\projects\gomokuproject\gomokuclient\gomokuclient\gomokuclient.cpp(223): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+  GomokuClient.vcxproj -> C:\Users\yoondh\Documents\Visual Studio 2017\Projects\GomokuProject\GomokuServer\x64\Debug\GomokuClient.exe
