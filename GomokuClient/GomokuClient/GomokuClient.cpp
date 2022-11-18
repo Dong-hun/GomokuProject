@@ -1,44 +1,17 @@
 ﻿// GomokuClient.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
 //
-#pragma comment(lib, "ws2_32.lib")
-
-#include <iostream>
-#include <stdio.h>
-#include <conio.h>
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <Windows.h>
-
-#include <thread>
-#include <atomic>
-#include <string>
-
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define PACKET_SIZE 1024
-#define	PORT 4578
-#define SERVER_IP "172.30.85.182"
-
-#define UP 72
-#define DOWN 80
-#define RIGHT 77
-#define LEFT 75
-#define SPACE 32
-
-#define DRAW_BLACK printf("○");
-#define DRAW_WHITE printf("●")
-
-#define GOMOKU_SIZE 15
-#define BLACK 1
-#define WHITE 2
+#include "stdafx.h"
 
 using namespace std;
 
-enum TurnState		// 턴 상태
+enum ClientState		// 턴 상태
 {
-	eNONE,    	    // 없음
-	eBLACK,   	    // 흑돌 턴
-	eWHITE,   	    // 백돌 턴
-	eFINISH,  	    // 끝
+	eNone = 0,		// 없음
+	eJoin_Room,		// 방 입장
+	eGame_Start,	// 게임 시작
+	eBlack,			// 흑돌 턴
+	eWhite,			// 백돌 턴
+	eFinish,		// 끝
 };
 
 // 패킷 전달
@@ -46,14 +19,14 @@ struct PacketInfo
 {
 	int x, y;           // 바둑판 좌표
 	int stoneColor;     // 돌 색깔
-	TurnState curState; // 현재 상태
+	ClientState curState; // 현재 상태
 
 	PacketInfo()
 	{
 		x = -1;
 		y = -1;
 		stoneColor = 0;
-		curState = eNONE;
+		curState = eNone;
 	}
 };
 
@@ -65,7 +38,7 @@ int board[GOMOKU_SIZE][GOMOKU_SIZE] = { 0, };   // 판 그리기
 int myColor = 0;                                // 내 색깔
 int posX;                                       // 현재 x좌표
 int posY;                                       // 현재 y좌표
-TurnState state;
+ClientState state;
 
 void JoinServer();
 void sendMsg(SOCKET& s);
@@ -73,7 +46,7 @@ void recvMsg(SOCKET& s);
 
 void InputKey(SOCKET& s);
 void gotoxy(int x, int y);
-void gotoTurnInput(TurnState turn);
+void gotoTurnInput(ClientState turn);
 void InitDrawBoard();
 void DrawStone(PacketInfo info);
 void DrawInfo();
@@ -202,7 +175,7 @@ void InputKey(SOCKET& s)
 	{
 		if (board[posY][posX] == 0)
 		{
-			char buf[PACKET_SIZE] = { 0, };
+			//char buf[PACKET_SIZE] = { 0, };
 			sendInfo.stoneColor = myColor;
 			sendInfo.x = posX;
 			sendInfo.y = posY;
@@ -245,22 +218,22 @@ void gotoxy(int x, int y)
 }
 
 // 턴 표시
-void gotoTurnInput(TurnState turn)
+void gotoTurnInput(ClientState turn)
 {
 	gotoxy(1, GOMOKU_SIZE + 2);
 
 	switch (turn)
 	{
-	case eNONE:
+	case eNone:
 		cout << "대기중" << endl;
 		break;
-	case eBLACK:
+	case eBlack:
 		cout << "흑돌 차례" << endl;
 		break;
-	case eWHITE:
+	case eWhite:
 		cout << "백돌 차례" << endl;
 		break;
-	case eFINISH:
+	case eFinish:
 		break;
 	default:
 		break;
@@ -367,15 +340,15 @@ void ChangState(PacketInfo pRecvMsg)        // 상태 변경
 
 	switch (state)
 	{
-	case eNONE:
+	case eNone:
 		break;
-	case eBLACK:
-		gotoTurnInput(eBLACK);              // 흑돌 턴이라고 써주기
+	case eBlack:
+		gotoTurnInput(eBlack);              // 흑돌 턴이라고 써주기
 		break;
-	case eWHITE:
-		gotoTurnInput(eWHITE);              // 백돌 턴이라고 써주기
+	case eWhite:
+		gotoTurnInput(eWhite);              // 백돌 턴이라고 써주기
 		break;
-	case eFINISH:
+	case eFinish:
 		DrawResult(pRecvMsg);               // 결과 출력하기
 		break;
 	default:
@@ -387,21 +360,21 @@ void StateProcess(SOCKET s)
 {
 	switch (state)
 	{
-	case eNONE:
+	case eNone:
 		break;
-	case eBLACK:
+	case eBlack :
 		if (myColor == BLACK)
 		{
 			InputKey(s);
 		}
 		break;
-	case eWHITE:
+	case eWhite:
 		if (myColor == WHITE)
 		{
 			InputKey(s);
 		}
 		break;
-	case eFINISH:
+	case eFinish:
 		break;
 	default:
 		break;
