@@ -17,14 +17,14 @@ enum ClientState		// 턴 상태
 // 패킷 전달
 struct PacketInfo
 {
-	SOCKET		s;				// 어느 소켓에서 왔는지?
+	//SOCKET		s;				// 어느 소켓에서 왔는지?
 	int			x, y;			// 바둑판 좌표
 	int			stoneColor;		// 돌 색깔
 	ClientState curState;		// 현재 상태
 
 	PacketInfo()
 	{
-		s = { 0 };
+		//s = { 0 };
 		x = -1;
 		y = -1;
 		stoneColor = 0;
@@ -33,7 +33,7 @@ struct PacketInfo
 
 	void SetPacket(PacketInfo p)
 	{
-		s = { 0 };
+		//s = { 0 };
 		x = p.x;
 		y = p.y;
 		stoneColor = p.stoneColor;
@@ -106,7 +106,7 @@ void JoinServer()       // 서버 접속
 	state = eNone;
 	ChangeState(eJoin_Room);
 
-	sendInfo.s = sock;
+	//sendInfo.s = sock;
 	thread(recvMsg).detach();
 
 	while (true)
