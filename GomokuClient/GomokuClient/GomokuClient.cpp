@@ -17,16 +17,27 @@ enum ClientState		// 턴 상태
 // 패킷 전달
 struct PacketInfo
 {
-	int x, y;           // 바둑판 좌표
-	int stoneColor;     // 돌 색깔
-	ClientState curState; // 현재 상태
+	SOCKET		s;				// 어느 소켓에서 왔는지?
+	int			x, y;			// 바둑판 좌표
+	int			stoneColor;		// 돌 색깔
+	ClientState curState;		// 현재 상태
 
 	PacketInfo()
 	{
+		s = { 0 };
 		x = -1;
 		y = -1;
 		stoneColor = 0;
 		curState = eNone;
+	}
+
+	void SetPacket(PacketInfo p)
+	{
+		s = { 0 };
+		x = p.x;
+		y = p.y;
+		stoneColor = p.stoneColor;
+		curState = p.curState;
 	}
 };
 
@@ -39,38 +50,27 @@ int myColor = 0;                                // 내 색깔
 int posX;                                       // 현재 x좌표
 int posY;                                       // 현재 y좌표
 ClientState state;
+SOCKET sock;
 
 void JoinServer();
-void sendMsg(SOCKET& s);
-void recvMsg(SOCKET& s);
+//void sendMsg(SOCKET& s);
+void recvMsg();
 
-void InputKey(SOCKET& s);
+void InputKey();
 void gotoxy(int x, int y);
-void gotoTurnInput(ClientState turn);
+//void gotoTurnInput(ClientState turn);
 void InitDrawBoard();
 void DrawStone(PacketInfo info);
 void DrawInfo();
 void ChangState(PacketInfo pRecvMsg);
-void StateProcess(SOCKET s);
+void StateProcess();
 void DrawResult(PacketInfo p);
+void ShowRecvMsg(PacketInfo p);
+void ChangeState(ClientState s);        // 상태 변경
+string GetStateToString(ClientState s);
 
 int main()
 {
-	//const char ProgMutex[] = "RUNNING";
-	//HANDLE Mutex = ::CreateMutex(FALSE, 0, (LPCWSTR)ProgMutex);
-	//if (::GetLastError() == ERROR_ALREADY_EXISTS)
-	//{
-	//	cout << "Error! Task already started!" << endl;;
-	//	exit(0);
-	//}
-	//else
-	//{
-	//	JoinServer();
-	//	while (true);
-	//}
-
-	//::ReleaseMutex(Mutex);
-
 	JoinServer();
 	while (true);
 	return 0;
@@ -84,7 +84,7 @@ void JoinServer()       // 서버 접속
 		printf("Failed WASStartup() \n");
 		return;
 	}
-	SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET)
 	{
 		WSACleanup();
@@ -103,43 +103,52 @@ void JoinServer()       // 서버 접속
 	//while (connect(sock, (SOCKADDR*)&servAddr, sizeof servAddr));	// 접속 하기
 	connect(sock, (SOCKADDR*)&servAddr, sizeof servAddr);   // 접속
 	InitDrawBoard();                                        // 보드 그리기
+	state = eNone;
+	ChangeState(eJoin_Room);
 
-	char buff[sizeof(PacketInfo)] = { 0 };                  // 메세지 받을 버퍼
-	recv(sock, buff, sizeof(PacketInfo), 0);                // 메세지 받아서 버퍼에 넣기
-	memcpy((char*)&recvInfo, buff, sizeof(PacketInfo));		// 메모리 카피 (recvInfo에 담아줌)
-	myColor = recvInfo.stoneColor;                          // 내 색깔 지정
-
-	DrawInfo();                                             // 내 정보 그려주기
-
-	posX = posY = GOMOKU_SIZE / 2;
-	gotoxy(posX, posY);
-
-	thread(recvMsg, ref(sock)).detach();
+	sendInfo.s = sock;
+	thread(recvMsg).detach();
 
 	while (true)
 	{
-		StateProcess(sock);
+		StateProcess();
 	}
 }
 
-void recvMsg(SOCKET& s)         // 메세지 받기
+void recvMsg()         // 메세지 받기
 {
 	char buff[sizeof(PacketInfo)] = { 0 };                  // 메세지 받을 버퍼
 	while (true)
 	{
-		recv(s, buff, sizeof(PacketInfo), 0);               // 메세지 받기
-		memcpy((char*)&recvInfo, buff, sizeof(PacketInfo)); // 메모리 카피
-		if (WSAGetLastError())	                            // 서버 종료 감지
+		recv(sock, buff, sizeof(PacketInfo), 0);               // 메세지 받기
+		memcpy((char*)&recvInfo, buff, sizeof(PacketInfo));		// 메모리 카피
+		//ShowRecvMsg(recvInfo);
+		if (WSAGetLastError())									// 서버 종료 감지
 		{
-			broken.store(true, memory_order_release);       // 종료
+			broken.store(true, memory_order_release);			// 종료
 			return;
 		}
-		ChangState(recvInfo);                               // 상태 변경
+		ChangState(recvInfo);									// 상태 변경
 	}
 }
 
+void ShowRecvMsg(PacketInfo p)
+{
+	gotoxy(GOMOKU_SIZE + 4, 2);
+	std::cout << "내 소켓 : " << sock << std::endl;
+	gotoxy(GOMOKU_SIZE + 4, 3);
+	//std::cout << "상태 : " << p.curState << std::endl;
+	std::cout << "상태 : " << GetStateToString(p.curState) << std::endl;
+	gotoxy(GOMOKU_SIZE + 4, 4);
+	std::cout << "x좌표 : " << p.x << std::endl;
+	gotoxy(GOMOKU_SIZE + 4, 5);
+	std::cout << "y좌표: " << p.y << std::endl;
+	gotoxy(GOMOKU_SIZE + 4, 6);
+	std::cout << "돌 색깔 : " << p.stoneColor<< std::endl;
+}
+
 // 키 입력 받기
-void InputKey(SOCKET& s)
+void InputKey()
 {
 	int input = _getch();
 
@@ -175,13 +184,13 @@ void InputKey(SOCKET& s)
 	{
 		if (board[posY][posX] == 0)
 		{
-			//char buf[PACKET_SIZE] = { 0, };
-			sendInfo.stoneColor = myColor;
+			//sendInfo.s = sock;
 			sendInfo.x = posX;
 			sendInfo.y = posY;
+			sendInfo.stoneColor = myColor;
 			sendInfo.curState = state;
 
-			send(s, (char*)&sendInfo, sizeof(PacketInfo), 0);	//송신
+			send(sock, (char*)&sendInfo, sizeof(PacketInfo), 0);	//송신
 		}
 	}
 }
@@ -215,31 +224,6 @@ void gotoxy(int x, int y)
 {
 	COORD pos = { x * 2, y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-}
-
-// 턴 표시
-void gotoTurnInput(ClientState turn)
-{
-	gotoxy(1, GOMOKU_SIZE + 2);
-
-	switch (turn)
-	{
-	case eNone:
-		cout << "대기중" << endl;
-		break;
-	case eBlack:
-		cout << "흑돌 차례" << endl;
-		break;
-	case eWhite:
-		cout << "백돌 차례" << endl;
-		break;
-	case eFinish:
-		break;
-	default:
-		break;
-	}
-
-	gotoxy(posX, posY);
 }
 
 // 결과 표시
@@ -325,9 +309,6 @@ void DrawInfo()
 	default:
 		break;
 	}
-
-	gotoxy(1, GOMOKU_SIZE + 2);
-	cout << "대기중" << endl;
 }
 
 void ChangState(PacketInfo pRecvMsg)        // 상태 변경
@@ -342,41 +323,93 @@ void ChangState(PacketInfo pRecvMsg)        // 상태 변경
 	{
 	case eNone:
 		break;
+	case eJoin_Room:
+		gotoxy(1, GOMOKU_SIZE + 4);
+		cout << "매칭 대기중" << endl;
+		break;
+	case eGame_Start:
+		myColor = pRecvMsg.stoneColor;
+		DrawInfo();
+		//send(sock, (char*)&sendInfo, PACKET_SIZE, 0);
+		break;
 	case eBlack:
-		gotoTurnInput(eBlack);              // 흑돌 턴이라고 써주기
+		gotoxy(1, GOMOKU_SIZE + 2);
+		cout << "흑돌 차례" << endl;
+		gotoxy(GOMOKU_SIZE / 2, GOMOKU_SIZE / 2);
 		break;
 	case eWhite:
-		gotoTurnInput(eWhite);              // 백돌 턴이라고 써주기
+		gotoxy(1, GOMOKU_SIZE + 2);
+		cout << "백돌 차례" << endl;
+		gotoxy(GOMOKU_SIZE / 2, GOMOKU_SIZE / 2);
 		break;
 	case eFinish:
 		DrawResult(pRecvMsg);               // 결과 출력하기
 		break;
-	default:
+	}
+}
+
+void ChangeState(ClientState s)        // 상태 변경
+{
+	if (state == s)		// 변경하려는 상태가 기존 상태랑 같다면
+		return;         // 리턴
+
+	state = s;          // 바꾸려는 상태 적용
+	
+	switch (state)
+	{
+	case eJoin_Room:
+		gotoxy(1, GOMOKU_SIZE + 4);
+		cout << "매칭 대기중" << endl;
 		break;
 	}
 }
 
-void StateProcess(SOCKET s)
+string GetStateToString(ClientState s)
 {
+	string str = "";
 	switch (state)
 	{
 	case eNone:
+		str = "내 상태 : None";
 		break;
-	case eBlack :
+	case eJoin_Room:
+		str = "내 상태 : Join Room";
+		break;
+	case eBlack:
+		str = "내 상태 : Black";
+		break;
+	case eWhite:
+		str = "내 상태 : White";
+		break;
+	case eFinish:
+		str = "내 상태 : Finish";
+		break;
+	}
+
+	return str;
+}
+
+void StateProcess()
+{
+	switch (state)
+	{
+	case eJoin_Room:
+		break;
+	case eGame_Start:
+		break;
+	case eBlack:
 		if (myColor == BLACK)
 		{
-			InputKey(s);
+			InputKey();
 		}
 		break;
 	case eWhite:
 		if (myColor == WHITE)
 		{
-			InputKey(s);
+			InputKey();
 		}
 		break;
 	case eFinish:
-		break;
-	default:
 		break;
 	}
 }

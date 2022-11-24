@@ -1,9 +1,2 @@
-<<<<<<< HEAD
 ﻿  GomokuServer.cpp
-  cClient.cpp
-  cMatchingRoom.cpp
-  코드를 생성하고 있습니다...
   GomokuServer.vcxproj -> C:\Users\yoondh\Documents\Visual Studio 2017\Projects\GomokuProject\GomokuServer\x64\Debug\GomokuServer.exe
-=======
-﻿C:\Users\yoondh\Documents\Visual Studio 2017\Projects\GomokuProject\GomokuServer\GomokuServer\GomokuServer.vcxproj : error MSB4025: 프로젝트 파일을 로드할 수 없습니다. 'C:\Users\yoondh\Documents\Visual Studio 2017\Projects\GomokuProject\GomokuServer\GomokuServer\GomokuServer.vcxproj' 파일을 찾을 수 없습니다.
->>>>>>> Server

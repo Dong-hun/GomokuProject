@@ -27,9 +27,6 @@
     <ClCompile Include="cClient.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="cGameServer.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="cMatchingRoomManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -44,10 +41,10 @@
     <ClInclude Include="cClient.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="cGameServer.h">
+    <ClInclude Include="cMatchingRoomManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="cMatchingRoomManager.h">
+    <ClInclude Include="PacketInfo.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

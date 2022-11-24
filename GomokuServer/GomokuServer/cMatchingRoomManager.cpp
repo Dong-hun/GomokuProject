@@ -14,12 +14,21 @@ cMatchingRoomManager::~cMatchingRoomManager()
 	m_pVecMatchingRoom.clear();
 }
 
-cMatchingRoom cMatchingRoomManager::FindMachingRoom(SOCKET s)
+cMatchingRoom* cMatchingRoomManager::GetMachingRoom(SOCKET s)
 {
 	for (int i = 0; i < m_pVecMatchingRoom.size(); i++)
 	{
-
+		cMatchingRoom* room = m_pVecMatchingRoom[i];
+		if (room->GetBlackStone()->sock == s || room->GetWhiteStone()->sock == s)
+			return room;
 	}
 
-	return cMatchingRoom();
+	return nullptr;
+}
+
+void cMatchingRoomManager::CreateMatchingRoom(cClient * black, cClient* white)
+{
+	cMatchingRoom* room = new cMatchingRoom();
+	room->CreateMatchingRoom(black, white);
+	m_pVecMatchingRoom.push_back(room);
 }

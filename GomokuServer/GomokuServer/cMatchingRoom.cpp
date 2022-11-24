@@ -3,6 +3,9 @@
 
 cMatchingRoom::cMatchingRoom()
 {
+	m_pBlackStone = new cClient();
+	m_pWhiteStone = new cClient();
+
 	board[GOMOKU_SIZE][GOMOKU_SIZE] = { 0, };   // 판 그리기
 }
 
@@ -19,35 +22,61 @@ cMatchingRoom::~cMatchingRoom()
 // 방 생성
 void cMatchingRoom::CreateMatchingRoom(cClient * black, cClient* white)
 {
-	PacketInfo packet;
-	packet.curState = ClientState::eGame_Start;
-	packet.stoneColor = BLACK;
-	m_pBlackStone = black;
-	send(m_pBlackStone->GetMySocket(), (char*)&packet, sizeof(PacketInfo), 0);
+	//sendInfo.curState	= ClientState::eGame_Start;
+	sendInfo.x			= -1;
+	sendInfo.y			= -1;
+	sendInfo.stoneColor	= BLACK;
+	sendInfo.curState	= ClientState::eGame_Start;
+	m_pBlackStone		= black;
+	send(m_pBlackStone->sock, (char*)&sendInfo, sizeof(PacketInfo), 0);
 
-	packet.stoneColor = WHITE;
-	m_pWhiteStone = white;
-	send(m_pBlackStone->GetMySocket(), (char*)&packet, sizeof(PacketInfo), 0);
+	sendInfo.stoneColor	= WHITE;
+	m_pWhiteStone		= white;
+	send(m_pWhiteStone->sock, (char*)&sendInfo, sizeof(PacketInfo), 0);
 
-//	std::thread(RecvMsg, std::ref(m_pBlackStone->GetMySocket)).detach();	// 쓰레드로 클라이언트 연결 돌리기
-
+	sendInfo.curState = ClientState::eBlack;
+	send(m_pBlackStone->sock, (char*)&sendInfo, sizeof(PacketInfo), 0);
+	send(m_pWhiteStone->sock, (char*)&sendInfo, sizeof(PacketInfo), 0);
 }
 
 void cMatchingRoom::GameStart()
 {
+
 }
 
-int cMatchingRoom::CheckWin(PacketInfo p)
+void cMatchingRoom::UpdateRoom(PacketInfo* p)	// 방 업데이트
 {
-	std::cout << "승패 검사" << std::endl;
+	sendInfo = *p;
+
+	if (CheckWin(sendInfo))						// 누군가 이겼다면
+	{
+		sendInfo.curState = eFinish;			// 상태만 끝으로 해서 변경
+	}
+	else										// 아니라면
+	{
+		if (sendInfo.curState == eBlack)		// 현재 상태가 흑이라면
+			sendInfo.curState = eWhite;			// 백으로 변경
+		else if (sendInfo.curState == eWhite)	// 백이라면
+			sendInfo.curState = eBlack;			// 흑으로 변경
+	}
+
+	// 메세지 보내기
+	send(m_pBlackStone->sock, (char*)&sendInfo, sizeof(PacketInfo), 0);
+	send(m_pWhiteStone->sock, (char*)&sendInfo, sizeof(PacketInfo), 0);
+}
+
+bool cMatchingRoom::CheckWin(PacketInfo p)	// 승패 검사
+{
+	//std::cout << "승패 검사" << std::endl;
 	int x = p.x;
 	int y = p.y;
 	board[x][y] = p.stoneColor;	// 서버 보드에 받은 좌표의 돌 컬러 넣기 (x = 세로 y = 가로)
 
 	if (CheckRow(x, y) == 5 || CheckColm(x, y) == 5 || CheckDiagonal(x, y) == 5)
-		return p.stoneColor;
+		return true;
+		//return p.stoneColor;
 
-	return 0;
+	return false;
 }
 
 int cMatchingRoom::CheckRow(int x, int y)
@@ -136,67 +165,3 @@ int cMatchingRoom::CheckDiagonal(int x, int y)
 
 	return curCnt;
 }
-
-//void cMatchingRoom::RecvMsg(SOCKET s)
-//{
-//	char buf[PACKET_SIZE] = { 0, };		// 메세지 받을 버퍼
-//
-//	// 반복문 돌기
-//	while (true)
-//	{
-//		if (WSAGetLastError())									// 비정상 종료 되었다면
-//		{
-//			// 나갔을 때는 stoneColor로 체크
-//			if (recvInfo.stoneColor == BLACK)
-//				std::cout << "Black Exit" << std::endl;
-//			else if (recvInfo.stoneColor == WHITE)
-//				std::cout << "White Exit" << std::endl;
-//
-//			RemoveClient(s);									// 해당 클라이언트 벡터에서 삭제
-//			return;
-//		}
-//		else
-//		{
-//			recv(s, buff, sizeof(PacketInfo), 0);					// 메세지 받기
-//			memcpy((char*)&recvInfo, buff, sizeof(PacketInfo));		// 메모리 카피 (recvInfo에 담아줌)
-//			sendInfo = recvInfo;									// 보낼 메세지에 받은 메세지 넣어줌
-//
-//			if (CheckWin(recvInfo) != 0)									// 이겼는지 체크해서 이긴사람이 있다면
-//			{
-//				if (recvInfo.stoneColor == BLACK)
-//				{
-//					std::cout << "흑돌 승리" << std::endl;
-//				}
-//				else if (recvInfo.stoneColor == WHITE)
-//				{
-//					std::cout << "백돌 승리" << std::endl;
-//				}
-//				sendInfo.curState = eFINISH;						// FINISH로 상태 변경
-//				for (int i = 0; i < vecSocket.size() - 1; ++i)				// 담긴 클라이언트 만큼 돌아서
-//				{
-//					send(vecSocket[i]->GetMySocket(), (char*)&sendInfo, sizeof(PacketInfo), 0);	// 다르다면 해당 클라이언트의 메세지를 다른 클라이언트에 띄워줌
-//				}
-//			}
-//			else													// 아니라면
-//			{
-//				if (recvInfo.stoneColor == BLACK)					// 돌 색깔 변경
-//				{
-//					sendInfo.curState = eWHITE;
-//					std::cout << "백돌 차례" << std::endl;
-//				}
-//				else if (recvInfo.stoneColor == WHITE)
-//				{
-//					sendInfo.curState = eBLACK;
-//					std::cout << "흑돌 차례" << std::endl;
-//				}
-//				for (int i = 0; i < vecSocket.size() - 1; ++i)				// 담긴 클라이언트 만큼 돌아서
-//				{
-//					send(vecSocket[i]->GetMySocket(), (char*)&sendInfo, sizeof(PacketInfo), 0);	// 다르다면 해당 클라이언트의 메세지를 다른 클라이언트에 띄워줌
-//				}
-//			}
-//
-//
-//		}
-//
-//	}
-//}

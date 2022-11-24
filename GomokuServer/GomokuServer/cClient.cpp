@@ -15,8 +15,8 @@ cClient::~cClient()
 	servAddrSize = sizeof(servAddr);
 }
 
-void cClient::AcceptClient(SOCKET s)
-{
-	sock = accept(s, (SOCKADDR*)&servAddr, &servAddrSize);
-}
+//void cClient::AcceptClient(SOCKET s)
+//{
+//	sock = accept(s, (SOCKADDR*)&servAddr, &servAddrSize);
+//}
 

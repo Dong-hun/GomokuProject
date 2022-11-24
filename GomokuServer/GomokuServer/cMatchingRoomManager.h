@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+//#include "PacketInfo.h"
 #include "cMatchingRoom.h"
 
 // ¸ÅÄª·ë ¸Å´ÏÁ®
@@ -12,8 +13,10 @@ public:
 	cMatchingRoomManager();
 	~cMatchingRoomManager();
 	
-	void PushMatchingRoom(cMatchingRoom* matchingRoom)	{ m_pVecMatchingRoom.push_back(matchingRoom); }
 	std::vector<cMatchingRoom*> GetMatchingRoomList()	{ return m_pVecMatchingRoom; }
 
-	cMatchingRoom FindMachingRoom(SOCKET s);
+	cMatchingRoom* GetMachingRoom(SOCKET s);
+	void CreateMatchingRoom(cClient * black, cClient* white);
+	//void PushMatchingRoom(cMatchingRoom* matchingRoom)	{ m_pVecMatchingRoom.push_back(matchingRoom); }
+	//void UpdateMatchingRoom(int x, int y, int color);
 };
