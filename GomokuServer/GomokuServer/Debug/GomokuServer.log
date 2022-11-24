@@ -1,7 +1,0 @@
-﻿  GomokuServer.cpp
-c:\users\yoondh\documents\visual studio 2017\projects\gomokuproject\gomokuserver\gomokuserver\gomokuserver.cpp(175): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\yoondh\documents\visual studio 2017\projects\gomokuproject\gomokuserver\gomokuserver\gomokuserver.cpp(202): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\yoondh\documents\visual studio 2017\projects\gomokuproject\gomokuserver\gomokuserver\gomokuserver.cpp(239): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\yoondh\documents\visual studio 2017\projects\gomokuproject\gomokuserver\gomokuserver\gomokuserver.cpp(256): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\yoondh\documents\visual studio 2017\projects\gomokuproject\gomokuserver\gomokuserver\gomokuserver.cpp(289): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-  GomokuServer.vcxproj -> C:\Users\yoondh\Documents\Visual Studio 2017\Projects\GomokuProject\GomokuServer\Debug\GomokuServer.exe
