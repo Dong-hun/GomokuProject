@@ -81,7 +81,7 @@ void CreateServer()
 		return;
 	}
 	sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-
+	
 	if (sock == INVALID_SOCKET)
 	{
 		WSACleanup();
