@@ -9,7 +9,7 @@ cMatchingRoomManager* matchingRoomMgr;	// 매칭룸 매니저
 PacketInfo recvInfo;					// 받는 패킷
 
 typedef std::queue<std::pair<SOCKET, PacketInfo*>> MessageQueue;	// 메세지 큐
-typedef std::pair<SOCKET, PacketInfo*> Message;
+typedef std::pair<SOCKET, PacketInfo*> Message;						// 메세지
 
 MessageQueue messageQueue;
 SOCKET sock;
@@ -51,25 +51,8 @@ void ProcessMessage()
 				messageQueue.pop();
 			}
 		}
-		//else
-		//	std::cout << "메세지 큐에 메세지 없음" << std::endl;
 	}
 
-	//while (true)
-	//{
-	//	if (!_messageQueue.empty())
-	//	{
-	//		PacketInfo* p = _messageQueue.front();
-	//		cMatchingRoom* room = matchingRoomMgr->GetMachingRoom(p->s);
-	//		if (room != nullptr)
-	//		{
-	//			room->UpdateRoom(p);
-	//			_messageQueue.pop();
-	//		}
-	//	}
-	//	//else
-	//	//	std::cout << "메세지 큐에 메세지 없음" << std::endl;
-	//}
 }
 
 void CreateServer()
