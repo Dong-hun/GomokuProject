@@ -4,51 +4,14 @@
 #include "PacketInfo.h"
 #include "cMatchingRoomManager.h"
 
-//enum ClientState		// 턴 상태
-//{
-//	eNone = 0,		// 없음
-//	eJoin_Room,		// 방 입장
-//	eGame_Start,	// 게임 시작
-//	eBlack,			// 흑돌 턴
-//	eWhite,			// 백돌 턴
-//	eFinish,		// 끝
-//};
-//
-//struct PacketInfo				// 전달할 패킷
-//{
-//	SOCKET s;					// 어느 소켓에서 왔는지?
-//	int x, y;					// 바둑판 좌표
-//	int stoneColor;				// 돌 색깔
-//	ClientState curState;		// 현재 상태
-//
-//	PacketInfo()
-//	{
-//		s			= { 0 };
-//		x			= -1;
-//		y			= -1;
-//		stoneColor	= 0;
-//		curState	= eNone;
-//	}
-//
-//	void SetPacket(PacketInfo* p)
-//	{
-//		s			= { 0 };
-//		x			= p->x;
-//		y			= p->y;
-//		stoneColor	= p->stoneColor;
-//		curState	= p->curState;
-//	}
-//};
-
 std::vector<cClient*> waitClientList;	// 생성된 클라이언트 담아줄 벡터
 cMatchingRoomManager* matchingRoomMgr;	// 매칭룸 매니저
 PacketInfo recvInfo;					// 받는 패킷
 
-//typedef std::queue<std::pair<SOCKET, PacketInfo*>> MessageQueue;	// 메세지 큐
-//MessageQueue messageQueue;
+typedef std::queue<std::pair<SOCKET, PacketInfo*>> MessageQueue;	// 메세지 큐
+typedef std::pair<SOCKET, PacketInfo*> Message;
 
-std::queue<PacketInfo*> _messageQueue;
-
+MessageQueue messageQueue;
 SOCKET sock;
 
 //int board[GOMOKU_SIZE][GOMOKU_SIZE] = { 0, };   // 판 그리기
@@ -78,19 +41,35 @@ void ProcessMessage()
 {
 	while (true)
 	{
-		if (!_messageQueue.empty())
+		if (!messageQueue.empty())
 		{
-			PacketInfo* p = _messageQueue.front();
-			cMatchingRoom* room = matchingRoomMgr->GetMachingRoom(p->s);
+			Message message = messageQueue.front();
+			cMatchingRoom* room = matchingRoomMgr->GetMachingRoom(message.first);
 			if (room != nullptr)
 			{
-				room->UpdateRoom(p);
-				_messageQueue.pop();
+				room->UpdateRoom(message.second);
+				messageQueue.pop();
 			}
 		}
 		//else
 		//	std::cout << "메세지 큐에 메세지 없음" << std::endl;
 	}
+
+	//while (true)
+	//{
+	//	if (!_messageQueue.empty())
+	//	{
+	//		PacketInfo* p = _messageQueue.front();
+	//		cMatchingRoom* room = matchingRoomMgr->GetMachingRoom(p->s);
+	//		if (room != nullptr)
+	//		{
+	//			room->UpdateRoom(p);
+	//			_messageQueue.pop();
+	//		}
+	//	}
+	//	//else
+	//	//	std::cout << "메세지 큐에 메세지 없음" << std::endl;
+	//}
 }
 
 void CreateServer()
@@ -140,7 +119,8 @@ void CreateServer()
 
 	waitClientList.clear();
 	matchingRoomMgr = new cMatchingRoomManager();
-	_messageQueue = std::queue<PacketInfo*>();
+	//messageQueue = std::queue<PacketInfo*>();
+	messageQueue = std::queue<std::pair<SOCKET, PacketInfo*>>();
 
 	std::thread(acceptClient, std::ref(sock)).detach();	// 쓰레드로 클라이언트 연결 돌리기
 	std::thread(ProcessMessage).detach();	// 쓰레드로 클라이언트 연결 돌리기
@@ -171,11 +151,10 @@ void recvMsg(SOCKET s)
 		{
 			recv(s, buff, sizeof(PacketInfo), 0);					// 메세지 받기
 			memcpy((char*)&recvInfo, buff, sizeof(PacketInfo));		// 메모리 카피 (recvInfo에 담아줌)
-			//PacketInfo* p = new PacketInfo();
-			//p = &recvInfo;
+
 			PacketInfo* p = &recvInfo;
-			p->s = s;
-			_messageQueue.push(p);
+			messageQueue.push({ s, p });
+			//p->s = s;
 		}
 
 	}

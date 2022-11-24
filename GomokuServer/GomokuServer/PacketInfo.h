@@ -12,14 +12,14 @@ enum ClientState		// 턴 상태
 
 struct PacketInfo				// 전달할 패킷
 {
-	SOCKET		s;				// 어느 소켓에서 왔는지?
+	//SOCKET		s;				// 어느 소켓에서 왔는지?
 	int			x, y;			// 바둑판 좌표
 	int			stoneColor;		// 돌 색깔
 	ClientState curState;		// 현재 상태
 
 	PacketInfo()
 	{
-		s			= { 0 };
+		//s			= { 0 };
 		x			= -1;
 		y			= -1;
 		stoneColor	= 0;
@@ -28,7 +28,7 @@ struct PacketInfo				// 전달할 패킷
 
 	void SetPacket(PacketInfo p)
 	{
-		s			= { 0 };
+		//s			= { 0 };
 		x			= p.x;
 		y			= p.y;
 		stoneColor	= p.stoneColor;
