@@ -1,2 +1,6 @@
 ﻿  GomokuServer.cpp
+  cClient.cpp
+  cMatchingRoom.cpp
+  cMatchingRoomManager.cpp
+  stdafx.cpp
   GomokuServer.vcxproj -> C:\Users\yoondh\Documents\Visual Studio 2017\Projects\GomokuProject\GomokuServer\x64\Debug\GomokuServer.exe

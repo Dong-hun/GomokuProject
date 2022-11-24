@@ -195,9 +195,6 @@ void acceptClient(SOCKET& s)
 		if (waitClientList.size() == 2)	// 대기 벡터에 두개가 차있다면
 		{
 			std::cout << "클라이언트 2명 생성. 방 생성" << std::endl;
-			//cMatchingRoom* matchingRoom = new cMatchingRoom();							// 매칭룸 생성
-			//matchingRoom->CreateMatchingRoom(waitClientList[0], waitClientList[1]);		// 매칭룸에 0,1번 클라이언트 넣어주기
-			//matchingRoomMgr->PushMatchingRoom(matchingRoom);							
 			matchingRoomMgr->CreateMatchingRoom(waitClientList[0], waitClientList[1]);	// 매칭룸 생성
 			std::thread(recvMsg, std::ref(waitClientList[0]->sock)).detach();	// 쓰레드로 클라이언트 연결 돌리기
 			std::thread(recvMsg, std::ref(waitClientList[1]->sock)).detach();	// 쓰레드로 클라이언트 연결 돌리기
