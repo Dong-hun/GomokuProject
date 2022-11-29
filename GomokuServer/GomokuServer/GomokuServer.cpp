@@ -55,7 +55,7 @@ void ProcessMessage()
 
 }
 
-void CreateServer()
+void CreateServer()		// 서버 만들기
 {
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -105,8 +105,8 @@ void CreateServer()
 	//messageQueue = std::queue<PacketInfo*>();
 	messageQueue = std::queue<std::pair<SOCKET, PacketInfo*>>();
 
-	std::thread(acceptClient, std::ref(sock)).detach();	// 쓰레드로 클라이언트 연결 돌리기
-	std::thread(ProcessMessage).detach();	// 쓰레드로 클라이언트 연결 돌리기
+	std::thread(acceptClient, std::ref(sock)).detach();	// 쓰레드로 클라이언트 연결
+	std::thread(ProcessMessage).detach();				// 쓰레드로 메세지 처리
 }
 
 // 메세지 받기
@@ -126,7 +126,7 @@ void recvMsg(SOCKET s)
 				std::cout << "White Exit" << std::endl;
 
 			// 대기중이라면 벡터에서만 지워주고
-			// 게임중이라면 방 파괴
+			// 게임중이라면 방 파괴 (만들어야됨)
 
 			return;
 		}
