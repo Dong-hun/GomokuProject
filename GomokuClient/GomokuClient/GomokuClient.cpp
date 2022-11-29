@@ -103,7 +103,6 @@ void JoinServer()       // 서버 접속
 	//while (connect(sock, (SOCKADDR*)&servAddr, sizeof servAddr));	// 접속 하기
 	connect(sock, (SOCKADDR*)&servAddr, sizeof servAddr);   // 접속
 	InitDrawBoard();                                        // 보드 그리기
-	state = eNone;
 	ChangeState(eJoin_Room);
 
 	//sendInfo.s = sock;
@@ -364,7 +363,7 @@ void ChangeState(ClientState s)        // 상태 변경
 	}
 }
 
-string GetStateToString(ClientState s)
+string GetStateToString(ClientState s)	// 상태 string으로 표시
 {
 	string str = "";
 	switch (state)
@@ -389,7 +388,7 @@ string GetStateToString(ClientState s)
 	return str;
 }
 
-void StateProcess()
+void StateProcess()		// 상태 별 Update
 {
 	switch (state)
 	{
