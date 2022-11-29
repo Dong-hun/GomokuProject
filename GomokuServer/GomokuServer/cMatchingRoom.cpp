@@ -44,7 +44,7 @@ void cMatchingRoom::GameStart()
 
 }
 
-void cMatchingRoom::UpdateRoom(PacketInfo* p)	// 방 업데이트
+void cMatchingRoom::ProcessMessageRoomClient(PacketInfo* p)	// 방 업데이트
 {
 	sendInfo = *p;
 
@@ -79,7 +79,7 @@ bool cMatchingRoom::CheckWin(PacketInfo p)	// 승패 검사
 	return false;
 }
 
-int cMatchingRoom::CheckRow(int x, int y)
+int cMatchingRoom::CheckRow(int x, int y)		// 가로 검사
 {
 	int color = board[x][y];	// 색깔
 	int victoryCnt = 5;			// 승리에 필요한 카운트
@@ -111,7 +111,7 @@ int cMatchingRoom::CheckRow(int x, int y)
 	//	return 0;
 }
 
-int cMatchingRoom::CheckColm(int x, int y)
+int cMatchingRoom::CheckColm(int x, int y)		// 세로 검사
 {
 	int color = board[x][y];	// 색깔
 	int victoryCnt = 5;			// 승리에 필요한 카운트
@@ -139,7 +139,7 @@ int cMatchingRoom::CheckColm(int x, int y)
 	return curCnt;
 }
 
-int cMatchingRoom::CheckDiagonal(int x, int y)
+int cMatchingRoom::CheckDiagonal(int x, int y)	// 대각선 검사
 {
 	int color = board[x][y];		// 색깔
 	int victoryCnt = 5;				// 승리에 필요한 카운트

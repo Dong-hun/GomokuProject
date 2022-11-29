@@ -24,7 +24,7 @@ public:
 
 	void CreateMatchingRoom(cClient* black, cClient* white);
 	void GameStart();
-	void UpdateRoom(PacketInfo* p);
+	void ProcessMessageRoomClient(PacketInfo* p);
 
 	//int CheckWin(PacketInfo p);			// 이겼는지 검사
 	bool CheckWin(PacketInfo p);			// 이겼는지 검사

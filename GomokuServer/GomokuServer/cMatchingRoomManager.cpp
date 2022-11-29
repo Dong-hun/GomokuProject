@@ -32,3 +32,16 @@ void cMatchingRoomManager::CreateMatchingRoom(cClient * black, cClient* white)
 	room->CreateMatchingRoom(black, white);
 	m_pVecMatchingRoom.push_back(room);
 }
+
+bool cMatchingRoomManager::UpdateMatchingRoom(SOCKET s, PacketInfo * p)
+{
+	cMatchingRoom* pRoom = GetMachingRoom(s);
+
+	if (pRoom != nullptr)
+	{
+		pRoom->ProcessMessageRoomClient(p);
+		return true;
+	}
+
+	return false;
+}

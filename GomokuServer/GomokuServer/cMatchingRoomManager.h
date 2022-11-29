@@ -17,6 +17,7 @@ public:
 
 	cMatchingRoom* GetMachingRoom(SOCKET s);
 	void CreateMatchingRoom(cClient * black, cClient* white);
+	bool UpdateMatchingRoom(SOCKET s, PacketInfo* p);
 	//void PushMatchingRoom(cMatchingRoom* matchingRoom)	{ m_pVecMatchingRoom.push_back(matchingRoom); }
 	//void UpdateMatchingRoom(int x, int y, int color);
 };
