@@ -44,18 +44,20 @@ void ProcessMessage()
 		if (!messageQueue.empty())
 		{
 			Message message = messageQueue.front();
-			cMatchingRoom* room = matchingRoomMgr->GetMachingRoom(message.first);
-			if (room != nullptr)
-			{
-				room->UpdateRoom(message.second);
+			if (matchingRoomMgr->UpdateMatchingRoom(message.first, message.second))
 				messageQueue.pop();
-			}
+			//cMatchingRoom* room = matchingRoomMgr->GetMachingRoom(message.first);
+			//if (room != nullptr)
+			//{
+			//	room->ProcessMessageRoomClient(message.second);
+			//	messageQueue.pop();
+			//}
 		}
 	}
 
 }
 
-void CreateServer()
+void CreateServer()		// 서버 만들기
 {
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -102,11 +104,10 @@ void CreateServer()
 
 	waitClientList.clear();
 	matchingRoomMgr = new cMatchingRoomManager();
-	//messageQueue = std::queue<PacketInfo*>();
 	messageQueue = std::queue<std::pair<SOCKET, PacketInfo*>>();
 
-	std::thread(acceptClient, std::ref(sock)).detach();	// 쓰레드로 클라이언트 연결 돌리기
-	std::thread(ProcessMessage).detach();	// 쓰레드로 클라이언트 연결 돌리기
+	std::thread(acceptClient, std::ref(sock)).detach();	// 쓰레드로 클라이언트 연결
+	std::thread(ProcessMessage).detach();				// 쓰레드로 메세지 처리
 }
 
 // 메세지 받기
@@ -126,7 +127,7 @@ void recvMsg(SOCKET s)
 				std::cout << "White Exit" << std::endl;
 
 			// 대기중이라면 벡터에서만 지워주고
-			// 게임중이라면 방 파괴
+			// 게임중이라면 방 파괴 (만들어야됨)
 
 			return;
 		}
@@ -149,18 +150,33 @@ void acceptClient(SOCKET& s)
 	int cnt = 0;
 	while (true)
 	{
-		cClient* c = new cClient();																				// 클라이언트 생성
+		cClient* c = new cClient();		// 클라이언트 생성
 		c->sock = accept(s, (SOCKADDR*)&c->GetSocketAddress(), &c->servAddrSize);		// 생성한 클라이언트 소켓 연결하기 (연결 될때까지 블로킹)
 
-		waitClientList.push_back(c);
+		AddWaitClient(c);
+		//waitClientList.push_back(c);
+		//
+		//if (waitClientList.size() == 2)	// 대기 벡터에 두개가 차있다면
+		//{
+		//	std::cout << "클라이언트 2명 생성. 방 생성" << std::endl;
+		//	matchingRoomMgr->CreateMatchingRoom(waitClientList[0], waitClientList[1]);	// 매칭룸 생성
+		//	std::thread(recvMsg, std::ref(waitClientList[0]->sock)).detach();			// 쓰레드로 클라이언트 연결 돌리기
+		//	std::thread(recvMsg, std::ref(waitClientList[1]->sock)).detach();			// 쓰레드로 클라이언트 연결 돌리기
+		//	waitClientList.clear();														// 대기 벡터 클리어
+		//}
+	}
+}
 
-		if (waitClientList.size() == 2)	// 대기 벡터에 두개가 차있다면
-		{
-			std::cout << "클라이언트 2명 생성. 방 생성" << std::endl;
-			matchingRoomMgr->CreateMatchingRoom(waitClientList[0], waitClientList[1]);	// 매칭룸 생성
-			std::thread(recvMsg, std::ref(waitClientList[0]->sock)).detach();	// 쓰레드로 클라이언트 연결 돌리기
-			std::thread(recvMsg, std::ref(waitClientList[1]->sock)).detach();	// 쓰레드로 클라이언트 연결 돌리기
-			waitClientList.clear();														// 대기 벡터 클리어
-		}
+void AddWaitClient(cClient* c)
+{
+	waitClientList.push_back(c);
+
+	if (waitClientList.size() == 2)	// 대기 벡터에 두개가 차있다면
+	{
+		std::cout << "클라이언트 2명 생성. 방 생성" << std::endl;
+		matchingRoomMgr->CreateMatchingRoom(waitClientList[0], waitClientList[1]);	// 매칭룸 생성
+		std::thread(recvMsg, std::ref(waitClientList[0]->sock)).detach();			// 쓰레드로 클라이언트 연결 돌리기
+		std::thread(recvMsg, std::ref(waitClientList[1]->sock)).detach();			// 쓰레드로 클라이언트 연결 돌리기
+		waitClientList.clear();														// 대기 벡터 클리어
 	}
 }

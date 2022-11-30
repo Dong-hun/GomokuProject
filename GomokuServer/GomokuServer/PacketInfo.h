@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+
 enum ClientState		// 턴 상태
 {
 	eNone = 0,		// 없음
